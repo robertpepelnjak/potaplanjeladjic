@@ -28,7 +28,20 @@ class Knofek:
   
 #funkcija, ki se izvede v primeru, da kliknemo na gumb na računalnikovi strani (uporabljena za streljanje na ladjice)
   def klik_racunalnik(self):
-    self.tkButton.configure(highlightbackground="yellow")
+    global ladje_racunalnik
+    self.tkButton.configure(state = tkinter.DISABLED)
+    if self.stanje > 0:
+      self.tkButton.configure(highlightbackground="orange")
+      ladje_racunalnik[self.stanje] -= 1
+      self.stanje *= (-1)
+      if ladje_racunalnik[self.stanje*(-1)] == 0:
+        for y in range(10):
+          for x in range(10):
+            if tabela_racunalnik[y][x].stanje == self.stanje:
+              tabela_racunalnik[y][x].tkButton.configure(highlightbackground="red")
+    else:
+      self.tkButton.configure(highlightbackground="blue")
+
     
 #funkcija, ki nariše ladjico po tem, ko si izberemo, kam jo bomo postavili
   def risiLadjico(self):
