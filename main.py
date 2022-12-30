@@ -1,7 +1,12 @@
 import tkinter
-ladje = [2, 3, 3, 4, 5] #ustvari seznam ladij in njihovih dolžin
-stladje = 4 #število ladje (uporabljeno pri postavljanju)
-stladje_racunalnik = 4 #število ladje računalnika (uporabljeno pri generaciji ladij na računalnikovi strani)
+import random
+ladje = [0, 2, 3, 3, 4, 5] #ustvari seznam ladij in njihovih dolžin
+ladje_racunalnik = [0, 2, 3, 3, 4, 5]
+stladje = 5 #število ladje (uporabljeno pri postavljanju)
+stladje_racunalnik = 5 #število ladje računalnika (uporabljeno pri generaciji ladij na računalnikovi strani)
+i = 4
+i_racunalnik = 4
+
 
 #funkcija, ki pogleda, če je določeno število med dvema drugima številoma (uporabljena pri postavljanju ladjic)
 def inclusive(a,b,c):
@@ -46,11 +51,53 @@ class Knofek:
     i = ladje[stladje] - 1
     #v primeru da so vse ladje postavljene, se vsi gumbi na naši strani izklopijo,
     #vsi na računalnikovi strani pa vklopijo
-    if stladje == -1:  
+    if stladje == 0:  
       for y in range(10): 
         for x in range(10):
           tabela[y][x].tkButton.configure(state = tkinter.DISABLED)
           tabela_racunalnik[y][x].tkButton.configure(state = tkinter.NORMAL)
+
+#pogleda, če je med začetnim gumbom in gumbom, ki bi se rad pojavil že kakšen gumb, katerega stanje
+#ni enako 0 (ima že ladjico na sebi)
+def a_se_kriza(x_1, x_2, y_1, y_2, kje):
+  krizanje = False
+  for vy in range(10):
+    for vx in range(10):
+      if (inclusive(vx, x_1 , x_2)) and (inclusive(vy, y_1, y_2)) and (kje[vy][vx].stanje != 0):
+        krizanje = True
+  return krizanje
+
+def racunalnikRiseLadjico(x_1, x_2, y_1, y_2):
+  global stladje_racunalnik
+  for y in range(10):
+    for x in range(10):
+      if inclusive(y ,y_2, y_1) and inclusive(x, x_2, x_1):
+        tabela_racunalnik[y][x].tkButton.configure(highlightbackground = "black")
+        tabela_racunalnik[y][x].stanje = stladje_racunalnik
+
+#FUNKCIJA, KI SI IZMISLE POZICIJO ZA LADJO RACUNALNIKA
+def izmisljotina():
+  global stladje
+  global stladje_racunalnik
+  global i_racunalnik
+  print("bruh")
+  while stladje_racunalnik != 0:
+    katera_bo = random.randint(0, 1)
+    naklucn_x = random.randrange(0, 9)
+    naklucn_y = random.randrange(0, 9)
+    if katera_bo == 0:
+      drugi_x = naklucn_x + i_racunalnik
+      drugi_y = naklucn_y
+    else:
+      drugi_y = naklucn_y + i_racunalnik
+      drugi_x = naklucn_x
+    if drugi_y > 9 or drugi_x > 9:
+      continue
+    
+    if not a_se_kriza(naklucn_x, drugi_x, naklucn_y, drugi_y, tabela_racunalnik):
+      racunalnikRiseLadjico(naklucn_x, drugi_x, naklucn_y, drugi_y)
+      stladje_racunalnik = stladje_racunalnik - 1
+      i_racunalnik = ladje_racunalnik[stladje_racunalnik] - 1
 
 #ustvari glavno okno
 okno = tkinter.Tk()
@@ -91,15 +138,14 @@ for y in range(10):
     frame.rowconfigure(0,weight=1)
     frame.grid(row=y, column=x+11)
     button.grid(sticky="wens")
+izmisljotina()
 
-i = ladje[stladje] - 1
 #funkcija, ki poišče, kje se pojavijo gumbi za risanje ladjice, ko pritisnemo poljuben gumb
 #med fazo postavljanja ladjic
 def iskanjeladjice(l_x, l_y, kje): #kje je uporabljeno, da lahko isto funkcijo uporabi tudi računalnik
   for y in range(10):
     for x in range(10):
       t = kje[y][x]
-      krizanje = False
       t.tkButton.configure(state = tkinter.DISABLED)
       #pogleda, če je na pravilnem mestu
       if (t.x == l_x + i and t.y == l_y) \
@@ -107,17 +153,14 @@ def iskanjeladjice(l_x, l_y, kje): #kje je uporabljeno, da lahko isto funkcijo u
           or (t.y == l_y + i and t.x == l_x) \
           or (t.y == l_y - i and t.x == l_x):
 
-        #pogleda, če je med začetnim gumbom in gumbom, ki bi se rad pojavil že kakšen gumb, katerega stanje
-        #ni enako 0 (ima že ladjico na sebi)
-        for vy in range(10):
-          for vx in range(10):
-            if (inclusive(vx,t.x,l_x)) and (inclusive(vy,t.y,l_y)) and (tabela[vy][vx].stanje != 0):
-              krizanje = True
-
         #če se ne križa s katerokoli ladjico in so prejšnji pogoji izpolnjeni, se bo pobarval sivo
-        if not krizanje:
+        if not a_se_kriza(t.x, l_x, t.y, l_y, tabela):
           t.drugiKonec = tabela[l_y][l_x]
           t.tkButton.configure(highlightbackground="grey",command=t.risiLadjico, state = tkinter.NORMAL)
+
+
+
+
 
 okno.mainloop()
 
