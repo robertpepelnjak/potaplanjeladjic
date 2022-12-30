@@ -1,4 +1,6 @@
 import tkinter
+ladje = [2, 3, 3, 4, 5]
+stladje = 4
 
 # A is between B and C
 #
@@ -7,6 +9,7 @@ def between(a,b,c):
 
 def inclusive(a,b,c):
   return (b <= a <= c) or (c <= a <= b)
+
 class Knofek:
   def __init__(self, x, y, button,frame):
     self.x = x
@@ -18,8 +21,14 @@ class Knofek:
   def klik(self):
     self.tkButton.configure(highlightbackground="black")
     iskanjeladjice(self.x, self.y)
+  
+  def ugasn(self):
+    print ("goaa")
+    
 
   def risiLadjico(self):
+    global stladje
+    global i
     for y in range(10):
       for x in range(10):
         t = tabela[y][x]
@@ -33,6 +42,12 @@ class Knofek:
             state = tkinter.NORMAL,
             highlightbackground = "white",
             command = t.klik)
+    stladje = stladje - 1
+    i = ladje[stladje] - 1
+    if stladje == -1:
+      for y in range(10):
+        for x in range(10):
+          tabela[y][x].tkButton.configure(state = tkinter.DISABLED)
 
 
 okno = tkinter.Tk()
@@ -53,21 +68,22 @@ for y in range(10):
     frame.grid(row=y, column=x)
     button.grid(sticky="wens")
 
-i = 4
+i = ladje[stladje] - 1
 def iskanjeladjice(l_x, l_y):
   for y in range(10):
     for x in range(10):
       t = tabela[y][x]
+      krizanje = False
       t.tkButton.configure(state = tkinter.DISABLED)
       if (t.x == l_x + i and t.y == l_y) \
           or (t.x == l_x - i and t.y == l_y) \
           or (t.y == l_y + i and t.x == l_x) \
           or (t.y == l_y - i and t.x == l_x):
 
-        krizanje = False
+        
         for vy in range(10):
           for vx in range(10):
-            if between(vx,t.x,l_x) and between(vy,t.y,l_y) and tabela[vy][vx].stanje != 0:
+            if (inclusive(vx,t.x,l_x)) and (inclusive(vy,t.y,l_y)) and (tabela[vy][vx].stanje != 0):
               krizanje = True
 
         if not krizanje:
