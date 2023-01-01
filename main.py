@@ -1,13 +1,55 @@
 import tkinter
 import random
+import time
+
 ladje = [0, 2, 3, 3, 4, 5] #ustvari seznam ladij in njihovih dolžin
 ladje_racunalnik = [0, 2, 3, 3, 4, 5]
 stladje = 5 #število ladje (uporabljeno pri postavljanju)
 stladje_racunalnik = 5 #število ladje računalnika (uporabljeno pri generaciji ladij na računalnikovi strani)
 i = 4
 i_racunalnik = 4
+ze_ciljane = []
 
+def ugasn_vse(kje):
+    for y in range(10):
+      for x in range(10):
+        kje[y][x].tkButton.configure(state = tkinter.DISABLED)
 
+def przgi_vse(kje):
+  for y in range(10):
+      for x in range(10):
+        if kje[y][x].stanje >= 0:
+          kje[y][x].tkButton.configure(state = tkinter.NORMAL)
+
+def racunalnik_cilja():
+  global ze_ciljane
+  global ladje
+  nism_nasu = True
+  while nism_nasu:
+    x_ciljan = random.randrange(10)
+    y_ciljan = random.randrange(10)
+    t = tabela[y_ciljan][x_ciljan]
+    if (x_ciljan, y_ciljan) not in ze_ciljane:
+      ze_ciljane.append((x_ciljan, y_ciljan))
+      
+      
+      
+      nism_nasu = False
+      if t.stanje > 0:
+        t.tkButton.configure(highlightbackground="orange")
+        ladje[t.stanje] -= 1
+        t.stanje *= (-1)
+        if ladje[t.stanje*(-1)] == 0:
+          for y in range(10):
+            for x in range(10):
+              if tabela[y][x].stanje == t.stanje:
+                tabela[y][x].tkButton.configure(highlightbackground="red")
+      else:
+        t.stanje = -99
+        t.tkButton.configure(highlightbackground="blue")
+      if sum(ladje) == 0:
+        print("ZGUBO SI")
+      
 #funkcija, ki pogleda, če je določeno število med dvema drugima številoma (uporabljena pri postavljanju ladjic)
 def inclusive(a,b,c):
   return (b <= a <= c) or (c <= a <= b)
@@ -25,11 +67,12 @@ class Knofek:
   def klik(self):
     self.tkButton.configure(highlightbackground="black")
     iskanjeladjice(self.x, self.y, tabela)
+
   
 #funkcija, ki se izvede v primeru, da kliknemo na gumb na računalnikovi strani (uporabljena za streljanje na ladjice)
   def klik_racunalnik(self):
     global ladje_racunalnik
-    self.tkButton.configure(state = tkinter.DISABLED)
+    ugasn_vse(tabela_racunalnik)
     if self.stanje > 0:
       self.tkButton.configure(highlightbackground="orange")
       ladje_racunalnik[self.stanje] -= 1
@@ -39,9 +82,13 @@ class Knofek:
           for x in range(10):
             if tabela_racunalnik[y][x].stanje == self.stanje:
               tabela_racunalnik[y][x].tkButton.configure(highlightbackground="red")
+      if sum(ladje_racunalnik) == 0:
+        print("KONEC IGRE PICKA")
     else:
+      self.stanje = -99
       self.tkButton.configure(highlightbackground="blue")
-
+    racunalnik_cilja()
+    przgi_vse(tabela_racunalnik)
     
 #funkcija, ki nariše ladjico po tem, ko si izberemo, kam jo bomo postavili
   def risiLadjico(self):
@@ -52,7 +99,7 @@ class Knofek:
         t = tabela[y][x]
         if inclusive(y ,self.drugiKonec.y, self.y) and inclusive(x, self.drugiKonec.x, self.x): #če se x in y določenega gumba nahaja med prej izbranima x in y koordinata,
           t.tkButton.configure(highlightbackground="black", state = tkinter.DISABLED) # se pobarva črno in izklopi
-          t.stanje = i #spremeni stanje (s tem vemo, katera vrsta ladje je na njem)
+          t.stanje = stladje #spremeni stanje (s tem vemo, katera vrsta ladje je na njem)
         elif t.stanje != 0: #v primeru da ima gumb že nastavljeno stanje, mu nič ne spremeni
           pass
         else: #vse gumbe, ki jih nismo pobarvali, nastavi nazaj na normalno
@@ -65,9 +112,9 @@ class Knofek:
     #v primeru da so vse ladje postavljene, se vsi gumbi na naši strani izklopijo,
     #vsi na računalnikovi strani pa vklopijo
     if stladje == 0:  
-      for y in range(10): 
+      ugasn_vse(tabela)
+      for y in range(10):
         for x in range(10):
-          tabela[y][x].tkButton.configure(state = tkinter.DISABLED)
           tabela_racunalnik[y][x].tkButton.configure(state = tkinter.NORMAL)
 
 #pogleda, če je med začetnim gumbom in gumbom, ki bi se rad pojavil že kakšen gumb, katerega stanje
@@ -79,6 +126,7 @@ def a_se_kriza(x_1, x_2, y_1, y_2, kje):
       if (inclusive(vx, x_1 , x_2)) and (inclusive(vy, y_1, y_2)) and (kje[vy][vx].stanje != 0):
         krizanje = True
   return krizanje
+
 
 def racunalnikRiseLadjico(x_1, x_2, y_1, y_2):
   global stladje_racunalnik
@@ -93,11 +141,10 @@ def izmisljotina():
   global stladje
   global stladje_racunalnik
   global i_racunalnik
-  print("bruh")
   while stladje_racunalnik != 0:
     katera_bo = random.randint(0, 1)
-    naklucn_x = random.randrange(0, 9)
-    naklucn_y = random.randrange(0, 9)
+    naklucn_x = random.randrange(10)
+    naklucn_y = random.randrange(10)
     if katera_bo == 0:
       drugi_x = naklucn_x + i_racunalnik
       drugi_y = naklucn_y
