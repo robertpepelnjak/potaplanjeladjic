@@ -1,6 +1,5 @@
 import tkinter
 import random
-import time
 
 ladje = [0, 2, 3, 3, 4, 5] #ustvari seznam ladij in njihovih dolžin
 ladje_racunalnik = [0, 2, 3, 3, 4, 5]
@@ -21,6 +20,24 @@ def przgi_vse(kje):
         if kje[y][x].stanje >= 0:
           kje[y][x].tkButton.configure(state = tkinter.NORMAL)
 
+def streljaj(y_koord, x_koord):
+  t = tabela[y_koord][x_koord]
+  if t.stanje > 0:
+        t.tkButton.configure(highlightbackground="orange")
+        ladje[t.stanje] -= 1
+        t.stanje *= (-1)
+        if ladje[t.stanje*(-1)] == 0:
+          for y in range(10):
+            for x in range(10):
+              if tabela[y][x].stanje == t.stanje:
+                tabela[y][x].tkButton.configure(highlightbackground="red")
+                tabela[y][x].stanje = -98
+  else:
+    t.stanje = -99
+    t.tkButton.configure(highlightbackground="blue")
+  if sum(ladje) == 0:
+    print("ZGUBO SI")
+
 def racunalnik_cilja():
   global ze_ciljane
   global ladje
@@ -31,24 +48,8 @@ def racunalnik_cilja():
     t = tabela[y_ciljan][x_ciljan]
     if (x_ciljan, y_ciljan) not in ze_ciljane:
       ze_ciljane.append((x_ciljan, y_ciljan))
-      
-      
-      
       nism_nasu = False
-      if t.stanje > 0:
-        t.tkButton.configure(highlightbackground="orange")
-        ladje[t.stanje] -= 1
-        t.stanje *= (-1)
-        if ladje[t.stanje*(-1)] == 0:
-          for y in range(10):
-            for x in range(10):
-              if tabela[y][x].stanje == t.stanje:
-                tabela[y][x].tkButton.configure(highlightbackground="red")
-      else:
-        t.stanje = -99
-        t.tkButton.configure(highlightbackground="blue")
-      if sum(ladje) == 0:
-        print("ZGUBO SI")
+      streljaj(y_ciljan, x_ciljan)
       
 #funkcija, ki pogleda, če je določeno število med dvema drugima številoma (uporabljena pri postavljanju ladjic)
 def inclusive(a,b,c):
