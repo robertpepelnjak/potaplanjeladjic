@@ -8,6 +8,16 @@ stladje_racunalnik = 5 #število ladje računalnika (uporabljeno pri generaciji 
 i = 4
 i_racunalnik = 4
 ze_ciljane = []
+seznamus = []
+x_origin = 0
+y_origin = 0
+zadete = []
+potopljena = False
+vrsteLadij = ["","Minolovca", "Podmornico", "Fregato","Križarko","Bojno Ladjo"]
+
+#funkcija, ki pogleda, če je določeno število med dvema drugima številoma (uporabljena pri postavljanju ladjic)
+def inclusive(a,b,c):
+  return (b <= a <= c) or (c <= a <= b)
 
 def ugasn_vse(kje):
     for y in range(10):
@@ -21,39 +31,87 @@ def przgi_vse(kje):
           kje[y][x].tkButton.configure(state = tkinter.NORMAL)
 
 def streljaj(y_koord, x_koord):
+  global potopljena
+  global zadete
+  global ze_ciljane
   t = tabela[y_koord][x_koord]
+  grogor = t.stanje
+  ze_ciljane.append((x_koord, y_koord))
   if t.stanje > 0:
-        t.tkButton.configure(highlightbackground="orange")
-        ladje[t.stanje] -= 1
-        t.stanje *= (-1)
-        if ladje[t.stanje*(-1)] == 0:
-          for y in range(10):
-            for x in range(10):
-              if tabela[y][x].stanje == t.stanje:
-                tabela[y][x].tkButton.configure(highlightbackground="red")
-                tabela[y][x].stanje = -98
+    t.tkButton.configure(highlightbackground="orange")
+    ladje[grogor] -= 1
+    t.stanje *= (-1)
+    zadete.append((y_koord, x_koord))
+    if ladje[grogor] == 0:
+      for y in range(10):
+        for x in range(10):
+          if tabela[y][x].stanje == -grogor:
+            tabela[y][x].tkButton.configure(highlightbackground="red")
+            tabela[y][x].stanje = -98
+            zadete.remove((y,x))
+      potopljena = True
+      napis.set("Računalnik je potopil %s!" %vrsteLadij[grogor])
+    if sum(ladje) == 0:
+      ugasn_vse(tabela)
+      ugasn_vse(tabela_racunalnik)
+      napis.set("Zgubil si!")
+      return
   else:
     t.stanje = -99
     t.tkButton.configure(highlightbackground="blue")
-  if sum(ladje) == 0:
-    print("ZGUBO SI")
+ 
 
-def racunalnik_cilja():
+def nakljucna_koordinata():
   global ze_ciljane
-  global ladje
+  global x_origin
+  global y_origin
   nism_nasu = True
   while nism_nasu:
-    x_ciljan = random.randrange(10)
-    y_ciljan = random.randrange(10)
-    t = tabela[y_ciljan][x_ciljan]
-    if (x_ciljan, y_ciljan) not in ze_ciljane:
-      ze_ciljane.append((x_ciljan, y_ciljan))
+    x_origin = random.randrange(10)
+    y_origin = random.randrange(10)
+    t = tabela[y_origin][x_origin]
+    if (x_origin, y_origin) not in ze_ciljane:
       nism_nasu = False
-      streljaj(y_ciljan, x_ciljan)
-      
-#funkcija, ki pogleda, če je določeno število med dvema drugima številoma (uporabljena pri postavljanju ladjic)
-def inclusive(a,b,c):
-  return (b <= a <= c) or (c <= a <= b)
+
+
+def ideja():
+  global seznamus
+  global x_origin
+  global y_origin
+  global potopljena
+  global zadete
+  if potopljena and zadete:
+    (y_origin, x_origin) = zadete[0]
+    seznamus.extend([(x_origin + 1, y_origin, +1, 0), (x_origin - 1, y_origin, -1, 0) , (x_origin, y_origin + 1, 0, +1), (x_origin, y_origin - 1, 0, -1)])
+    potopljena == False
+  while seznamus:
+    (x, y, dx, dy) = seznamus.pop(0)
+    if inclusive(x, 0, 9) and inclusive(y, 0, 9) \
+      and ((x, y) not in ze_ciljane):
+      if (tabela[y][x].stanje > 0 or inclusive(tabela[y][x].stanje, -5, -1 )):
+        if inclusive(tabela[y][x].stanje, -5, -1 ):
+          seznamus.insert(0, (x+dx*2,y+dy*2,dx,dy))
+        else:
+          seznamus.insert(0, (x+dx,y+dy,dx,dy))
+      return (y, x)
+  else:
+    nakljucna_koordinata()
+    if tabela[y_origin][x_origin].stanje > 0:
+      seznamus.extend([(x_origin + 1, y_origin, +1, 0), (x_origin - 1, y_origin, -1, 0) , (x_origin, y_origin + 1, 0, +1), (x_origin, y_origin - 1, 0, -1)])
+      potopljena = False
+    return (y_origin, x_origin) 
+    
+  
+
+def racunalnik_cilja():
+  global x_origin
+  global y_origin
+  global ze_ciljane
+  global ladje
+  (y, x) = ideja()
+  streljaj(y, x)
+    
+  
 
 #class knofek z vsemi podatki, ki jih mora vsak posamezen gumb imeti
 class Knofek:
@@ -75,6 +133,7 @@ class Knofek:
     global ladje_racunalnik
     ugasn_vse(tabela_racunalnik)
     if self.stanje > 0:
+      grogor = self.stanje
       self.tkButton.configure(highlightbackground="orange")
       ladje_racunalnik[self.stanje] -= 1
       self.stanje *= (-1)
@@ -83,8 +142,12 @@ class Knofek:
           for x in range(10):
             if tabela_racunalnik[y][x].stanje == self.stanje:
               tabela_racunalnik[y][x].tkButton.configure(highlightbackground="red")
+        napis.set("Igralec je potopil %s!" %vrsteLadij[grogor])
       if sum(ladje_racunalnik) == 0:
-        print("KONEC IGRE PICKA")
+        ugasn_vse(tabela)
+        ugasn_vse(tabela_racunalnik)
+        napis.set("Zmagal si!")
+        return
     else:
       self.stanje = -99
       self.tkButton.configure(highlightbackground="blue")
@@ -93,6 +156,7 @@ class Knofek:
     
 #funkcija, ki nariše ladjico po tem, ko si izberemo, kam jo bomo postavili
   def risiLadjico(self):
+    global napis
     global stladje
     global i
     for y in range(10):
@@ -114,6 +178,7 @@ class Knofek:
     #vsi na računalnikovi strani pa vklopijo
     if stladje == 0:  
       ugasn_vse(tabela)
+      napis.set("Streljaj!")
       for y in range(10):
         for x in range(10):
           tabela_racunalnik[y][x].tkButton.configure(state = tkinter.NORMAL)
@@ -134,7 +199,7 @@ def racunalnikRiseLadjico(x_1, x_2, y_1, y_2):
   for y in range(10):
     for x in range(10):
       if inclusive(y ,y_2, y_1) and inclusive(x, x_2, x_1):
-        tabela_racunalnik[y][x].tkButton.configure(highlightbackground = "black")
+        #tabela_racunalnik[y][x].tkButton.configure(highlightbackground = "black")
         tabela_racunalnik[y][x].stanje = stladje_racunalnik
 
 #FUNKCIJA, KI SI IZMISLE POZICIJO ZA LADJO RACUNALNIKA
@@ -163,6 +228,7 @@ def izmisljotina():
 #ustvari glavno okno
 okno = tkinter.Tk()
 okno.geometry("1920x1280")
+okno.title("Potapljanje Ladjic")
 
 #GENERACIJA IGRALČEVIH GUMBOV
 tabela = []
@@ -200,6 +266,10 @@ for y in range(10):
     frame.grid(row=y, column=x+11)
     button.grid(sticky="wens")
 izmisljotina()
+
+napis = tkinter.StringVar()
+label = tkinter.Label(okno, textvariable = napis, height = 1, font = ("Arial", 24)).grid(row = 11, column = 21)
+napis.set("Postavi svoje ladje!")
 
 #funkcija, ki poišče, kje se pojavijo gumbi za risanje ladjice, ko pritisnemo poljuben gumb
 #med fazo postavljanja ladjic
