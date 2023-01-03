@@ -43,7 +43,7 @@ def streljaj(y_koord, x_koord):
   grogor = t.stanje
   ze_ciljane.append((x_koord, y_koord)) #doda trenutno streljani koordinati na seznam že ciljanih koordinat
   if t.stanje > 0: #če je na tem polju ladja, se bo obarvalo oranžno
-    t.tkButton.configure(highlightbackground="orange")
+    t.tkButton.configure(bg="orange")
     ladje[grogor] -= 1 #dolžina te ladje v spisku ladji se skrajša
     t.stanje *= (-1) #stanje tega gumba se spremeni na negativno verzijo sebe
     zadete.append((y_koord, x_koord)) #doda koordinato gumba na seznam, kjer so gumbi zadetih ladij
@@ -51,7 +51,7 @@ def streljaj(y_koord, x_koord):
       for y in range(10):
         for x in range(10):
           if tabela[y][x].stanje == -grogor: #vsak gumb, ki pripada tej ladji, se obrava rdeče
-            tabela[y][x].tkButton.configure(highlightbackground="red")
+            tabela[y][x].tkButton.configure(bg="red")
             tabela[y][x].stanje = -98 
             zadete.remove((y,x)) #odsrtani vsak gumb, ki pripada tej ladji, iz seznama zadetih gumbov
       potopljena = True #sporoči, da je ta ladja ravnokar bila potopljena
@@ -63,7 +63,7 @@ def streljaj(y_koord, x_koord):
       napis.set("Zgubil si!")
   else: #če na ciljanem polju ni ladje, se gumb obarva modro in spremeni stanje
     t.stanje = -99 
-    t.tkButton.configure(highlightbackground="blue")
+    t.tkButton.configure(bg="blue")
  
  #funkcija, ki si izmisli naključno koordinato
 def nakljucna_koordinata():
@@ -130,7 +130,7 @@ class Knofek:
 
 #funkcija, ki se izvede v primeru, da kliknemo na gumb na naši strani (uporabljena za postavljanje ladic)
   def klik(self):
-    self.tkButton.configure(highlightbackground="black")
+    self.tkButton.configure(bg="black")
     iskanjeladjice(self.x, self.y, tabela)
 
 #funkcija, ki se izvede v primeru, da kliknemo na gumb na računalnikovi strani (uporabljena za streljanje na ladjice)
@@ -140,14 +140,14 @@ class Knofek:
     ugasn_vse(tabela_racunalnik)
     if self.stanje > 0:
       grogor = self.stanje
-      self.tkButton.configure(highlightbackground="orange")
+      self.tkButton.configure(bg="orange")
       ladje_racunalnik[self.stanje] -= 1
       self.stanje *= (-1)
       if ladje_racunalnik[self.stanje*(-1)] == 0:
         for y in range(10):
           for x in range(10):
             if tabela_racunalnik[y][x].stanje == self.stanje:
-              tabela_racunalnik[y][x].tkButton.configure(highlightbackground="red")
+              tabela_racunalnik[y][x].tkButton.configure(bg="red")
         napis.set("Igralec je potopil %s!" %vrsteLadij[grogor])
       if sum(ladje_racunalnik) == 0:
         ugasn_vse(tabela)
@@ -156,7 +156,7 @@ class Knofek:
         return
     else:
       self.stanje = -99
-      self.tkButton.configure(highlightbackground="blue")
+      self.tkButton.configure(bg="blue")
     racunalnik_cilja()
     if not zguba: #če nisi zgubil, se vsi gumbi prižgejo nazaj
       przgi_vse(tabela_racunalnik)
@@ -170,14 +170,14 @@ class Knofek:
       for x in range(10):
         t = tabela[y][x]
         if inclusive(y ,self.drugiKonec.y, self.y) and inclusive(x, self.drugiKonec.x, self.x): #če se x in y določenega gumba nahaja med prej izbranima x in y koordinata,
-          t.tkButton.configure(highlightbackground="black", state = tkinter.DISABLED) # se pobarva črno in izklopi
+          t.tkButton.configure(bg="black", state = tkinter.DISABLED) # se pobarva črno in izklopi
           t.stanje = stladje #spremeni stanje (s tem vemo, katera vrsta ladje je na njem)
         elif t.stanje != 0: #v primeru da ima gumb že nastavljeno stanje, mu nič ne spremeni
           pass
         else: #vse gumbe, ki jih nismo pobarvali, nastavi nazaj na normalno
           t.tkButton.configure(
             state = tkinter.NORMAL,
-            highlightbackground = "white",
+            bg = "white",
             command = t.klik)
     stladje = stladje - 1 #spremeni spremenljivke, s katerimi vemo, katero ladjo postavljamo
     i = ladje[stladje] - 1
@@ -244,7 +244,7 @@ for y in range(10): #ustvari seznam seznamov, kjer se nahajajo vsi gumbi
   tabela.append([])
   for x in range(10):
     frame = tkinter.Frame(okno, width=40, height=40)
-    button = tkinter.Button(frame, highlightbackground="white")#ustvari nov gumb
+    button = tkinter.Button(frame, bg="white")#ustvari nov gumb
     pametniKnofek = Knofek(x,y,button,frame)#ustvari nov objekt classa knofek, na katerega veže koordinati in gumb
     button.configure(command=pametniKnofek.klik)#gumbu nastavi funkcijo "klik"
     tabela[y].append(pametniKnofek)#tabeli doda na novo ustvarjen knofek
@@ -264,7 +264,7 @@ for y in range(10):
   tabela_racunalnik.append([])
   for x in range(10):
     frame = tkinter.Frame(okno, width=40, height=40)
-    button = tkinter.Button(frame, highlightbackground="white")
+    button = tkinter.Button(frame, bg="white")
     neumniKnofek = Knofek(x,y,button,frame)
     button.configure(command=neumniKnofek.klik_racunalnik, state = tkinter.DISABLED)
     tabela_racunalnik[y].append(neumniKnofek)
@@ -297,7 +297,7 @@ def iskanjeladjice(l_x, l_y, kje): #"kje" je uporabljeno, da lahko isto funkcijo
         #in gumb se bo prižgal (vklopil)
         if not a_se_kriza(t.x, l_x, t.y, l_y, tabela):
           t.drugiKonec = tabela[l_y][l_x]
-          t.tkButton.configure(highlightbackground="grey",command=t.risiLadjico, state = tkinter.NORMAL)
+          t.tkButton.configure(bg="grey",command=t.risiLadjico, state = tkinter.NORMAL)
 
 okno.mainloop() #naredi da pač laufa
 
